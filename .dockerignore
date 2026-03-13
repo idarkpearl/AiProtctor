@@ -1,0 +1,33 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.venv
+.env
+.vscode
+.idea
+*.pt
+!yolov8s.pt
+models/*.task
+# We'll re-allow the specific models we need
+!models/face_landmarker.task
+!models/hand_landmarker.task
+# Ignore other unused models
+yolov8n.pt
+yolov8m.pt
+yolov8l.pt
+yolov8x.pt
+tests/
+docs/
+*.md
+!README.md
+!FINAL_INTEGRATION_STEPS.md
+!NEXTJS_INTEGRATION.md
+!deployment_instructions.md
