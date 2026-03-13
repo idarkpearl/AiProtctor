@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Proctoring - Advanced Test Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0e14;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #38bdf8;
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .main-layout {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .video-card {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        video {
+            border-radius: 12px;
+            background: #000;
+            width: 640px;
+            height: 480px;
+            transform: scaleX(-1); /* Mirror effect */
+        }
+        .side-panel {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+        }
+        .malpractice-list {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .malpractice-item {
+            background: #7f1d1d;
+            color: #fecaca;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border-left: 4px solid #ef4444;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .stat-box {
+            background: #334155;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .suspicion-container {
+            margin-top: 10px;
+        }
+        .suspicion-bar {
+            height: 12px;
+            background: #475569;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        #suspicion-fill {
+            height: 100%;
+            width: 0%;
+            background: #10b981;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-container {
+            margin-top: 30px;
+        }
+        button {
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        #toggle-btn {
+            background: #0284c7;
+            color: white;
+        }
+        #toggle-btn.active {
+            background: #ef4444;
+        }
+        #toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        canvas { display: none; }
+        .overlay-status {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .pulse.red { background: #ef4444; animation-name: pulse-red; }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>AI Exam Proctor</h1>
+        <p class="subtitle">Intelligent Real-time Candidate Monitoring</p>
+    </div>
+    
+    <div class="main-layout">
+        <div class="video-card">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            <div class="overlay-status">
+                <div id="status-pulse" class="pulse"></div>
+                <span id="monitoring-text">STANDBY</span>
+            </div>
+        </div>
+        
+        <div class="side-panel">
+            <div class="card">
+                <h3>Live Diagnostics</h3>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Face</span>
+                        <span id="face-val" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">People</span>
+                        <span id="people-val" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Gaze</span>
+                        <span id="gaze-val" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Talking</span>
+                        <span id="talking-val" class="stat-value">-</span>
+                    </div>
+                </div>
+                
+                <div class="suspicion-container">
+                    <span class="stat-label" style="display: flex; justify-content: space-between;">
+                        Suspicion Index <span id="score-text">0%</span>
+                    </span>
+                    <div class="suspicion-bar">
+                        <div id="suspicion-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="flex-grow: 1;">
+                <h3>Active Malpractices</h3>
+                <div id="malpractice-list" class="malpractice-list">
+                    <!-- Alerts injected here -->
+                    <div style="color: #64748b; font-style: italic; text-align: center; margin-top: 20px;">
+                        No suspicious activity detected.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-container">
+        <button id="toggle-btn">Start Proctoring</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const monitoringText = document.getElementById('monitoring-text');
+        const pulse = document.getElementById('status-pulse');
+        const malpracticeList = document.getElementById('malpractice-list');
+        
+        let isMonitoring = false;
+        let intervalId = null;
+
+        async function init() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error("Webcam Error:", err);
+                alert("Camera access required.");
+            }
+        }
+
+        async function process() {
+            if (!isMonitoring) return;
+
+            const context = canvas.getContext('2d');
+            canvas.width = 640;
+            canvas.height = 480;
+            context.drawImage(video, 0, 0, 640, 480);
+            
+            const base64 = canvas.toDataURL('image/jpeg', 0.8);
+            
+            try {
+                const res = await fetch('http://localhost:8000/api/v1/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64 })
+                });
+
+                const data = await res.json();
+                render(data);
+            } catch (err) {
+                console.error("API Error:", err);
+            }
+        }
+
+        function render(data) {
+            document.getElementById('face-val').textContent = data.face_present ? "Detect" : "NONE";
+            document.getElementById('face-val').style.color = data.face_present ? "#10b981" : "#ef4444";
+            
+            document.getElementById('people-val').textContent = data.person_count;
+            document.getElementById('people-val').style.color = data.person_count > 1 ? "#ef4444" : "#e2e8f0";
+            
+            document.getElementById('gaze-val').textContent = data.gaze_direction;
+            document.getElementById('gaze-val').style.color = data.looking_away ? "#ef4444" : "#e2e8f0";
+            
+            document.getElementById('talking-val').textContent = data.is_talking ? "YES" : "NO";
+            document.getElementById('talking-val').style.color = data.is_talking ? "#ef4444" : "#e2e8f0";
+
+            const score = data.suspicion_score;
+            document.getElementById('score-text').textContent = score + "%";
+            const fill = document.getElementById('suspicion-fill');
+            fill.style.width = score + "%";
+            
+            if (score > 60) fill.style.backgroundColor = "#ef4444";
+            else if (score > 30) fill.style.backgroundColor = "#f59e0b";
+            else fill.style.backgroundColor = "#10b981";
+
+            // Malpractices
+            if (data.malpractices.length > 0) {
+                malpracticeList.innerHTML = data.malpractices.map(m => 
+                    `<div class="malpractice-item">⚠️ ${m}</div>`
+                ).join('');
+                monitoringText.textContent = "SUSPICIOUS";
+                pulse.classList.add('red');
+            } else {
+                malpracticeList.innerHTML = `<div style="color: #64748b; font-style: italic; text-align: center; margin-top: 20px;">No suspicious activity detected.</div>`;
+                monitoringText.textContent = "MONITORING";
+                pulse.classList.remove('red');
+            }
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            isMonitoring = !isMonitoring;
+            if (isMonitoring) {
+                toggleBtn.textContent = "Stop Monitoring";
+                toggleBtn.classList.add('active');
+                monitoringText.textContent = "MONITORING";
+                intervalId = setInterval(process, 1500); // 1.5s interval
+            } else {
+                toggleBtn.textContent = "Start Proctoring";
+                toggleBtn.classList.remove('active');
+                monitoringText.textContent = "STANDBY";
+                clearInterval(intervalId);
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
